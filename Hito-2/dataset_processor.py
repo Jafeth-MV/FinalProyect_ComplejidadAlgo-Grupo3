@@ -1,269 +1,233 @@
 """
-Procesamiento y geocodificación del dataset de Provías.
-Convierte direcciones textuales a coordenadas geográficas.
+Dataset Processor
+Procesa datasets de Excel con coordenadas y nombres de lugares
 """
 
 import pandas as pd
 import numpy as np
-from typing import Tuple, List, Dict
-from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut, GeocoderServiceError
-import time
+from typing import Tuple, List, Optional
+from geopy.distance import geodesic
 
 
 class DatasetProcessor:
     """
-    Procesa el dataset de Provías y realiza geocodificación.
+    Procesa datasets de coordenadas desde archivos Excel.
     """
 
-    def __init__(self, excel_path: str):
-        self.excel_path = excel_path
-        self.df_original = None
-        self.df_procesado = None
-        self.geolocator = Nominatim(user_agent="rutafix_app", timeout=10)
+    def __init__(self):
+        self.df = None
+        self.coordenadas = None
+        self.nombres = None
 
-    def cargar_dataset(self) -> pd.DataFrame:
-        """Carga el dataset desde Excel."""
-        print(f"Cargando dataset desde: {self.excel_path}")
-        self.df_original = pd.read_excel(self.excel_path)
-        print(f"✓ Dataset cargado: {len(self.df_original)} filas")
-        print(f"✓ Columnas: {list(self.df_original.columns)}")
-        return self.df_original
-
-    def limpiar_dataset(self) -> pd.DataFrame:
+    def cargar_desde_excel(
+        self,
+        archivo: str,
+        col_nombre: str = 'Nombre',
+        col_latitud: str = 'Latitud',
+        col_longitud: str = 'Longitud'
+    ) -> Tuple[np.ndarray, List[str]]:
         """
-        Limpia y normaliza el dataset.
-        Filtra columnas relevantes y maneja valores faltantes.
-        """
-        print("\nLimpiando dataset...")
-
-        # Identificar columnas relevantes
-        columnas_esperadas = {
-            'TRAMO': ['TRAMO', 'Tramo', 'tramo'],
-            'PROVINCIA': ['PROVINCIA', 'Provincia', 'provincia'],
-            'DISTRITO': ['DISTRITO', 'Distrito', 'distrito'],
-            'DEPARTAMENTO': ['DEPARTAMENTO', 'Departamento', 'departamento'],
-            'INICIO': ['INICIO', 'Inicio', 'inicio', 'KM_INICIO'],
-            'FIN': ['FIN', 'Fin', 'fin', 'KM_FIN']
-        }
-
-        # Mapear columnas
-        columnas_mapeadas = {}
-        for key, posibles in columnas_esperadas.items():
-            for col in self.df_original.columns:
-                if col in posibles:
-                    columnas_mapeadas[col] = key
-                    break
-
-        # Crear dataframe limpio
-        self.df_procesado = self.df_original.rename(columns=columnas_mapeadas)
-
-        # Eliminar filas con datos faltantes en columnas críticas
-        columnas_criticas = ['TRAMO', 'PROVINCIA']
-        self.df_procesado = self.df_procesado.dropna(subset=columnas_criticas)
-
-        print(f"✓ Dataset limpio: {len(self.df_procesado)} filas válidas")
-        return self.df_procesado
-
-    def geocodificar_direcciones(self, limite: int = None,
-                                delay: float = 1.0) -> pd.DataFrame:
-        """
-        Geocodifica las direcciones del dataset a coordenadas.
+        Carga coordenadas desde un archivo Excel.
 
         Args:
-            limite: Número máximo de direcciones a geocodificar (None = todas)
-            delay: Tiempo de espera entre peticiones (segundos)
-
-        Returns:
-            DataFrame con columnas Latitud y Longitud agregadas
-        """
-        print("\nIniciando geocodificación...")
-
-        if self.df_procesado is None:
-            raise ValueError("Primero debe limpiar el dataset")
-
-        # Limitar número de geocodificaciones si se especifica
-        df_geo = self.df_procesado.copy()
-        if limite:
-            df_geo = df_geo.head(limite)
-            print(f"Geocodificando primeras {limite} direcciones...")
-
-        latitudes = []
-        longitudes = []
-        errores = 0
-
-        total = len(df_geo)
-
-        for idx, row in df_geo.iterrows():
-            # Construir dirección
-            direccion_parts = []
-
-            if pd.notna(row.get('TRAMO')):
-                direccion_parts.append(str(row['TRAMO']))
-            if pd.notna(row.get('DISTRITO')):
-                direccion_parts.append(str(row['DISTRITO']))
-            if pd.notna(row.get('PROVINCIA')):
-                direccion_parts.append(str(row['PROVINCIA']))
-            if pd.notna(row.get('DEPARTAMENTO')):
-                direccion_parts.append(str(row['DEPARTAMENTO']))
-            else:
-                direccion_parts.append('Perú')
-
-            direccion = ', '.join(direccion_parts)
-
-            # Intentar geocodificar
-            try:
-                location = self.geolocator.geocode(direccion)
-
-                if location:
-                    latitudes.append(location.latitude)
-                    longitudes.append(location.longitude)
-                else:
-                    latitudes.append(np.nan)
-                    longitudes.append(np.nan)
-                    errores += 1
-
-                # Mostrar progreso
-                if (idx + 1) % 10 == 0:
-                    progreso = (idx + 1) / total * 100
-                    print(f"  Progreso: {progreso:.1f}% ({idx + 1}/{total})")
-
-                # Esperar para no sobrecargar el servicio
-                time.sleep(delay)
-
-            except (GeocoderTimedOut, GeocoderServiceError) as e:
-                print(f"  Error en índice {idx}: {e}")
-                latitudes.append(np.nan)
-                longitudes.append(np.nan)
-                errores += 1
-                time.sleep(delay * 2)  # Esperar más después de un error
-
-        # Agregar coordenadas al dataframe
-        df_geo['Latitud'] = latitudes
-        df_geo['Longitud'] = longitudes
-        df_geo['Nodo'] = [f"Nodo_{i}" for i in range(len(df_geo))]
-
-        # Eliminar filas sin coordenadas
-        df_geo = df_geo.dropna(subset=['Latitud', 'Longitud'])
-
-        print(f"\n✓ Geocodificación completada")
-        print(f"  Total procesado: {total}")
-        print(f"  Exitosos: {total - errores}")
-        print(f"  Errores: {errores}")
-        print(f"  Válidos finales: {len(df_geo)}")
-
-        self.df_procesado = df_geo
-        return df_geo
-
-    def usar_coordenadas_simuladas(self, centro_lat: float = -12.0462,
-                                   centro_lon: float = -77.0428,
-                                   radio: float = 0.5) -> pd.DataFrame:
-        """
-        Genera coordenadas simuladas alrededor de un centro (para pruebas rápidas).
-
-        Args:
-            centro_lat: Latitud del centro (por defecto Lima)
-            centro_lon: Longitud del centro
-            radio: Radio de dispersión en grados
-
-        Returns:
-            DataFrame con coordenadas simuladas
-        """
-        print("\nGenerando coordenadas simuladas...")
-
-        if self.df_procesado is None:
-            raise ValueError("Primero debe limpiar el dataset")
-
-        n = len(self.df_procesado)
-
-        # Generar coordenadas aleatorias alrededor del centro
-        np.random.seed(42)
-        latitudes = centro_lat + (np.random.randn(n) * radio)
-        longitudes = centro_lon + (np.random.randn(n) * radio)
-
-        self.df_procesado['Latitud'] = latitudes
-        self.df_procesado['Longitud'] = longitudes
-        self.df_procesado['Nodo'] = [f"Nodo_{i}" for i in range(n)]
-
-        print(f"✓ Coordenadas simuladas generadas para {n} puntos")
-        print(f"  Centro: ({centro_lat}, {centro_lon})")
-        print(f"  Radio: {radio} grados")
-
-        return self.df_procesado
-
-    def exportar_procesado(self, output_path: str):
-        """Exporta el dataset procesado a Excel."""
-        if self.df_procesado is None:
-            raise ValueError("No hay dataset procesado para exportar")
-
-        self.df_procesado.to_excel(output_path, index=False)
-        print(f"✓ Dataset procesado exportado a: {output_path}")
-
-    def obtener_coordenadas(self) -> Tuple[np.ndarray, List[str]]:
-        """
-        Obtiene las coordenadas y nombres del dataset procesado.
+            archivo: Ruta al archivo Excel
+            col_nombre: Nombre de la columna con nombres
+            col_latitud: Nombre de la columna con latitudes
+            col_longitud: Nombre de la columna con longitudes
 
         Returns:
             Tupla (coordenadas, nombres)
         """
-        if self.df_procesado is None:
-            raise ValueError("No hay dataset procesado")
+        print(f"📂 Cargando dataset: {archivo}")
 
-        coordenadas = self.df_procesado[['Latitud', 'Longitud']].values
-        nombres = self.df_procesado['Nodo'].tolist()
+        try:
+            self.df = pd.read_excel(archivo)
+            print(f"✓ Archivo cargado: {len(self.df)} registros")
+        except Exception as e:
+            print(f"❌ Error al cargar archivo: {e}")
+            raise
 
-        return coordenadas, nombres
+        # Verificar columnas
+        columnas_necesarias = [col_nombre, col_latitud, col_longitud]
+        columnas_faltantes = [col for col in columnas_necesarias if col not in self.df.columns]
 
+        if columnas_faltantes:
+            print(f"❌ Columnas faltantes: {columnas_faltantes}")
+            print(f"   Columnas disponibles: {self.df.columns.tolist()}")
+            raise ValueError(f"Columnas faltantes: {columnas_faltantes}")
 
-def procesar_dataset_provias(input_path: str, output_path: str,
-                             usar_simulacion: bool = True,
-                             limite_geocoding: int = None) -> pd.DataFrame:
-    """
-    Función principal para procesar el dataset de Provías.
+        # Limpiar datos
+        print("🧹 Limpiando datos...")
+        df_limpio = self.df.copy()
 
-    Args:
-        input_path: Ruta al archivo Excel de entrada
-        output_path: Ruta para guardar el dataset procesado
-        usar_simulacion: Si True, usa coordenadas simuladas en lugar de geocodificar
-        limite_geocoding: Límite de direcciones a geocodificar (si no se usa simulación)
+        # Eliminar filas con valores nulos
+        df_limpio = df_limpio.dropna(subset=[col_nombre, col_latitud, col_longitud])
 
-    Returns:
-        DataFrame procesado
-    """
-    print("="*70)
-    print("PROCESAMIENTO DE DATASET - PROVÍAS")
-    print("="*70)
+        # Convertir coordenadas a numérico
+        df_limpio[col_latitud] = pd.to_numeric(df_limpio[col_latitud], errors='coerce')
+        df_limpio[col_longitud] = pd.to_numeric(df_limpio[col_longitud], errors='coerce')
 
-    processor = DatasetProcessor(input_path)
+        # Eliminar filas con coordenadas inválidas
+        df_limpio = df_limpio.dropna(subset=[col_latitud, col_longitud])
 
-    # Cargar y limpiar
-    processor.cargar_dataset()
-    processor.limpiar_dataset()
+        # Validar rangos
+        df_limpio = df_limpio[
+            (df_limpio[col_latitud] >= -90) & (df_limpio[col_latitud] <= 90) &
+            (df_limpio[col_longitud] >= -180) & (df_limpio[col_longitud] <= 180)
+        ]
 
-    # Obtener coordenadas
-    if usar_simulacion:
-        df_final = processor.usar_coordenadas_simuladas()
-    else:
-        df_final = processor.geocodificar_direcciones(limite=limite_geocoding)
+        print(f"✓ Datos limpios: {len(df_limpio)} registros válidos")
 
-    # Exportar
-    processor.exportar_procesado(output_path)
+        if len(df_limpio) == 0:
+            raise ValueError("No hay datos válidos después de la limpieza")
 
-    print("\n" + "="*70)
-    print("PROCESAMIENTO COMPLETADO")
-    print("="*70)
+        # Extraer coordenadas y nombres
+        self.coordenadas = df_limpio[[col_latitud, col_longitud]].values
+        self.nombres = df_limpio[col_nombre].astype(str).tolist()
 
-    return df_final
+        return self.coordenadas, self.nombres
 
+    def crear_dataset_muestra(
+        self,
+        n_puntos: int = 20,
+        lat_centro: float = -12.0464,
+        lon_centro: float = -77.0428,
+        radio: float = 0.5
+    ) -> Tuple[np.ndarray, List[str]]:
+        """
+        Crea un dataset de muestra aleatorio.
 
-if __name__ == "__main__":
-    # Ejemplo de uso
-    print("\nMódulo de Procesamiento de Dataset")
-    print("="*50)
-    print("Funcionalidades:")
-    print("1. Carga y limpieza de datos de Provías")
-    print("2. Geocodificación de direcciones")
-    print("3. Generación de coordenadas simuladas")
-    print("4. Exportación de datos procesados")
-    print("="*50)
+        Args:
+            n_puntos: Número de puntos a generar
+            lat_centro: Latitud del centro
+            lon_centro: Longitud del centro
+            radio: Radio en grados para dispersión
+
+        Returns:
+            Tupla (coordenadas, nombres)
+        """
+        print(f"🎲 Generando dataset de muestra: {n_puntos} puntos")
+
+        np.random.seed(42)
+
+        # Generar coordenadas aleatorias alrededor del centro
+        latitudes = np.random.uniform(
+            lat_centro - radio,
+            lat_centro + radio,
+            n_puntos
+        )
+
+        longitudes = np.random.uniform(
+            lon_centro - radio,
+            lon_centro + radio,
+            n_puntos
+        )
+
+        self.coordenadas = np.column_stack([latitudes, longitudes])
+        self.nombres = [f"Punto_{i+1}" for i in range(n_puntos)]
+
+        print(f"✓ Dataset generado: {len(self.nombres)} puntos")
+
+        return self.coordenadas, self.nombres
+
+    def limitar_puntos(self, max_puntos: int) -> Tuple[np.ndarray, List[str]]:
+        """
+        Limita el dataset a un número máximo de puntos.
+
+        Args:
+            max_puntos: Número máximo de puntos
+
+        Returns:
+            Tupla (coordenadas, nombres) limitados
+        """
+        if self.coordenadas is None or len(self.coordenadas) <= max_puntos:
+            return self.coordenadas, self.nombres
+
+        print(f"✂️ Limitando dataset de {len(self.coordenadas)} a {max_puntos} puntos")
+
+        # Tomar los primeros max_puntos
+        self.coordenadas = self.coordenadas[:max_puntos]
+        self.nombres = self.nombres[:max_puntos]
+
+        return self.coordenadas, self.nombres
+
+    def calcular_matriz_distancias(self, usar_geodesica: bool = False) -> np.ndarray:
+        """
+        Calcula la matriz de distancias entre todos los puntos.
+
+        Args:
+            usar_geodesica: Si True, usa distancia geodésica; si False, euclidiana
+
+        Returns:
+            Matriz de distancias (N, N)
+        """
+        if self.coordenadas is None:
+            raise ValueError("No hay coordenadas cargadas")
+
+        n = len(self.coordenadas)
+        matriz = np.zeros((n, n))
+
+        print(f"📏 Calculando matriz de distancias ({n}x{n})...")
+
+        for i in range(n):
+            for j in range(i + 1, n):
+                if usar_geodesica:
+                    # Distancia geodésica en kilómetros
+                    dist = geodesic(
+                        self.coordenadas[i],
+                        self.coordenadas[j]
+                    ).kilometers
+                else:
+                    # Distancia euclidiana
+                    dist = np.linalg.norm(
+                        self.coordenadas[i] - self.coordenadas[j]
+                    )
+
+                matriz[i, j] = dist
+                matriz[j, i] = dist
+
+        print(f"✓ Matriz calculada")
+
+        return matriz
+
+    def obtener_estadisticas(self) -> dict:
+        """
+        Obtiene estadísticas del dataset.
+
+        Returns:
+            Diccionario con estadísticas
+        """
+        if self.coordenadas is None:
+            return {}
+
+        return {
+            'n_puntos': len(self.coordenadas),
+            'lat_min': float(self.coordenadas[:, 0].min()),
+            'lat_max': float(self.coordenadas[:, 0].max()),
+            'lon_min': float(self.coordenadas[:, 1].min()),
+            'lon_max': float(self.coordenadas[:, 1].max()),
+            'lat_centro': float(self.coordenadas[:, 0].mean()),
+            'lon_centro': float(self.coordenadas[:, 1].mean()),
+            'nombres': self.nombres
+        }
+
+    def exportar_a_excel(self, archivo: str = 'dataset_procesado.xlsx'):
+        """
+        Exporta el dataset procesado a Excel.
+
+        Args:
+            archivo: Nombre del archivo de salida
+        """
+        if self.coordenadas is None:
+            print("⚠️ No hay datos para exportar")
+            return
+
+        df_export = pd.DataFrame({
+            'Nombre': self.nombres,
+            'Latitud': self.coordenadas[:, 0],
+            'Longitud': self.coordenadas[:, 1]
+        })
+
+        df_export.to_excel(archivo, index=False)
+        print(f"✓ Dataset exportado a: {archivo}")
 
