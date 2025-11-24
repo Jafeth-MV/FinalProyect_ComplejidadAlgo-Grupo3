@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RutaFix - Optimización de Rutas</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🚀 RutaFix</h1>
+                <p>Sistema de Optimización</p>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>Modo de Datos</label>
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="upload">Subir Excel</button>
+                        <button class="tab-btn" data-tab="random">Aleatorio</button>
+                    </div>
+                </div>
+                
+                <div id="upload-panel" class="panel active">
+                    <div class="file-upload">
+                        <input type="file" id="excel-file" accept=".xlsx, .xls">
+                        <label for="excel-file">
+                            <span class="icon">📂</span>
+                            <span class="text">Seleccionar archivo</span>
+                        </label>
+                    </div>
+                    <small>Formato: Nombre, Latitud, Longitud</small>
+                </div>
+                
+                <div id="random-panel" class="panel">
+                    <div class="input-group">
+                        <label>Cantidad de Puntos</label>
+                        <input type="number" id="n-points" value="20" min="5" max="100">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Número de Clusters</label>
+                    <input type="range" id="n-clusters" min="1" max="10" value="5">
+                    <span id="cluster-value">5</span>
+                </div>
+                
+                <button id="optimize-btn" class="primary-btn">
+                    <span class="btn-text">Optimizar Ruta</span>
+                    <div class="loader hidden"></div>
+                </button>
+            </div>
+            
+            <div id="stats-panel" class="stats hidden">
+                <h3>📊 Resultados</h3>
+                <div class="stat-item">
+                    <span class="label">Distancia Total:</span>
+                    <span class="value" id="total-dist">- km</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Tiempo Proceso:</span>
+                    <span class="value" id="exec-time">- s</span>
+                </div>
+                
+                <div class="route-list-container">
+                    <h4>Secuencia de Visita</h4>
+                    <ol id="route-list"></ol>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="map-container">
+            <div id="map"></div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
