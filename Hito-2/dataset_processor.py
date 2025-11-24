@@ -19,6 +19,107 @@ class DatasetProcessor:
         self.coordenadas = None
         self.nombres = None
 
+    def cargar_desde_csv_intervenciones(
+        self,
+        archivo: str = '1_Dataset_Intervenciones_PVD_30062025.csv',
+        max_puntos: int = 50
+    ) -> Tuple[np.ndarray, List[str]]:
+        """
+        Carga datos desde el CSV de intervenciones y genera coordenadas aproximadas.
+
+        Args:
+            archivo: Ruta al archivo CSV
+            max_puntos: Número máximo de puntos a generar
+
+        Returns:
+            Tupla (coordenadas, nombres)
+        """
+        print(f"📂 Cargando CSV de intervenciones: {archivo}")
+
+        # Coordenadas de capitales de departamento
+        coords_departamentos = {
+            'TACNA': (-18.0146, -70.2502),
+            'AREQUIPA': (-16.4090, -71.5375),
+            'MOQUEGUA': (-17.1934, -70.9346),
+            'PUNO': (-15.8402, -70.0219),
+            'CUSCO': (-13.5319, -71.9675),
+            'APURIMAC': (-13.6339, -73.3641),
+            'AYACUCHO': (-13.1631, -74.2236),
+            'ICA': (-14.0678, -75.7286),
+            'HUANCAVELICA': (-12.7869, -74.9760),
+            'JUNIN': (-12.0689, -75.2048),
+            'LIMA': (-12.0464, -77.0428),
+            'PASCO': (-10.6819, -76.2578),
+            'HUANUCO': (-9.9307, -76.2422),
+            'UCAYALI': (-8.3791, -74.5539),
+            'SAN MARTIN': (-6.4869, -76.3650),
+            'AMAZONAS': (-5.7698, -77.8700),
+            'LORETO': (-3.7437, -73.2516),
+            'CAJAMARCA': (-7.1638, -78.5128),
+            'LA LIBERTAD': (-8.1116, -79.0289),
+            'ANCASH': (-9.5278, -77.5278),
+            'LAMBAYEQUE': (-6.7714, -79.8391),
+            'PIURA': (-5.1945, -80.6328),
+            'TUMBES': (-3.5668, -80.4515),
+            'MADRE DE DIOS': (-12.5931, -69.1891),
+        }
+
+        try:
+            # Cargar CSV con diferentes encodings
+            for encoding in ['latin1', 'iso-8859-1', 'cp1252']:
+                try:
+                    self.df = pd.read_csv(archivo, sep=';', encoding=encoding, nrows=200)
+                    print(f"✓ CSV cargado con encoding {encoding}: {len(self.df)} registros")
+                    break
+                except:
+                    continue
+        except Exception as e:
+            print(f"❌ Error al cargar CSV: {e}")
+            raise
+
+        # Obtener rutas únicas
+        rutas_unicas = self.df.drop_duplicates(subset=['CODIGO_RUTA']).head(max_puntos)
+
+        coordenadas_list = []
+        nombres_list = []
+
+        np.random.seed(42)
+
+        for idx, row in rutas_unicas.iterrows():
+            try:
+                codigo_ruta = str(row['CODIGO_RUTA'])
+                dept_raw = str(row['DEPARTAMENTO'])
+                provincia = str(row.get('PROVINCIA', 'Desconocida'))
+
+                # Limpiar departamento
+                dept = dept_raw.strip().upper()
+                if '-' in dept:
+                    dept = dept.split('-')[0].strip()
+
+                # Buscar coordenadas
+                if dept in coords_departamentos:
+                    base_lat, base_lon = coords_departamentos[dept]
+
+                    # Añadir variación aleatoria
+                    lat = base_lat + np.random.uniform(-0.3, 0.3)
+                    lon = base_lon + np.random.uniform(-0.3, 0.3)
+
+                    coordenadas_list.append([lat, lon])
+                    nombre = f"{codigo_ruta}_{provincia[:15]}"
+                    nombres_list.append(nombre)
+            except Exception as e:
+                continue
+
+        if len(coordenadas_list) == 0:
+            raise ValueError("No se pudieron generar coordenadas desde el CSV")
+
+        self.coordenadas = np.array(coordenadas_list)
+        self.nombres = nombres_list
+
+        print(f"✓ Generadas {len(self.nombres)} ubicaciones desde el CSV")
+
+        return self.coordenadas, self.nombres
+
     def cargar_desde_excel(
         self,
         archivo: str,

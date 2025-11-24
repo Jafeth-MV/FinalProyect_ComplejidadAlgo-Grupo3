@@ -29,14 +29,29 @@
                 <div class="control-group">
                     <label>Modo de Datos</label>
                     <div class="tabs">
-                        <button class="tab-btn active" data-tab="upload">Subir Excel</button>
+                        <button class="tab-btn active" data-tab="csv">Base de Datos CSV</button>
+                        <button class="tab-btn" data-tab="upload">Subir Excel</button>
                         <button class="tab-btn" data-tab="random">Aleatorio</button>
                     </div>
                 </div>
                 
-                <div id="upload-panel" class="panel active">
+                <div id="csv-panel" class="panel active">
+                    <div class="info-box">
+                        <span class="icon">🗺️</span>
+                        <div>
+                            <strong>Dataset de Intervenciones Viales</strong>
+                            <p>Usa datos reales de rutas del Perú</p>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Cantidad de Puntos</label>
+                        <input type="number" id="csv-points" value="50" min="10" max="200">
+                    </div>
+                </div>
+
+                <div id="upload-panel" class="panel">
                     <div class="file-upload">
-                        <input type="file" id="excel-file" accept=".xlsx, .xls">
+                        <input type="file" id="excel-file" accept=".xlsx, .xls, .csv">
                         <label for="excel-file">
                             <span class="icon">📂</span>
                             <span class="text">Seleccionar archivo</span>

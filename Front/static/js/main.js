@@ -54,13 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         formData.append('n_clusters', nClustersInput.value);
 
-        if (mode === 'upload') {
+        if (mode === 'csv') {
+            // Use CSV database
+            formData.append('use_csv', 'true');
+            formData.append('n_points', document.getElementById('csv-points').value);
+        } else if (mode === 'upload') {
             if (!fileInput.files[0]) {
-                alert('Por favor selecciona un archivo Excel');
+                alert('Por favor selecciona un archivo Excel o CSV');
                 return;
             }
             formData.append('file', fileInput.files[0]);
         } else {
+            // Random mode
             formData.append('use_random', 'true');
             formData.append('n_points', document.getElementById('n-points').value);
         }

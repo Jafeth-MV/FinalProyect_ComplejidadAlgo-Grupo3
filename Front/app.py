@@ -28,27 +28,40 @@ def optimize():
     try:
         coordenadas = None
         nombres = None
-        
+        processor = DatasetProcessor()
+
+        # Check if using CSV database
+        if request.form.get('use_csv') == 'true':
+            csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Hito-2', '1_Dataset_Intervenciones_PVD_30062025.csv'))
+            n_points = int(request.form.get('n_points', 50))
+
+            if os.path.exists(csv_path):
+                coordenadas, nombres = processor.cargar_desde_csv_intervenciones(csv_path, max_puntos=n_points)
+            else:
+                return jsonify({'error': 'CSV de intervenciones no encontrado'}), 400
+
         # Check if file was uploaded
-        if 'file' in request.files:
+        elif 'file' in request.files:
             file = request.files['file']
             if file.filename != '':
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
                 
-                processor = DatasetProcessor()
-                # We need to modify dataset_processor to handle the file path correctly or use the one we just saved
-                coordenadas, nombres = processor.cargar_desde_excel(filepath)
-                
-                # Limit points for performance if needed (optional, maybe parameterize)
-                if len(coordenadas) > 100:
-                    coordenadas, nombres = processor.limitar_puntos(100)
-        
+                # Detect file type
+                if filename.lower().endswith('.csv'):
+                    coordenadas, nombres = processor.cargar_desde_csv_intervenciones(filepath)
+                else:
+                    coordenadas, nombres = processor.cargar_desde_excel(filepath)
+
+                # Limit points for performance if needed
+                max_puntos = int(request.form.get('max_points', 100))
+                if len(coordenadas) > max_puntos:
+                    coordenadas, nombres = processor.limitar_puntos(max_puntos)
+
         # Check if using random data
         elif request.form.get('use_random') == 'true':
             n_points = int(request.form.get('n_points', 20))
-            processor = DatasetProcessor()
             coordenadas, nombres = processor.crear_dataset_muestra(n_puntos=n_points)
             
         if coordenadas is None:
@@ -56,11 +69,11 @@ def optimize():
 
         # Run optimization
         n_clusters = int(request.form.get('n_clusters', 5))
+        metodo_tsp = request.form.get('metodo_tsp', 'auto')
         optimizador = OptimizadorRutasHibrido(n_clusters=n_clusters)
-        resultados = optimizador.optimizar(coordenadas, nombres)
-        
+        resultados = optimizador.optimizar(coordenadas, nombres, metodo_tsp=metodo_tsp)
+
         # Prepare response for frontend
-        # We need the ordered list of coordinates to draw the route
         ruta_global_coords = []
         ruta_global_nombres = []
         
@@ -71,12 +84,20 @@ def optimize():
             
         # Also return cluster info for coloring
         clusters_info = []
-        for cluster in resultados['clusters']:
+        colores = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+                   '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788']
+
+        for i, cluster in enumerate(resultados['clusters']):
             cluster_coords = [coordenadas[idx].tolist() for idx in cluster['ruta_global']]
+            cluster_nombres = [nombres[idx] for idx in cluster['ruta_global']]
             clusters_info.append({
                 'id': cluster['cluster_id'],
                 'coords': cluster_coords,
-                'color': 'auto' # Frontend will assign colors
+                'nombres': cluster_nombres,
+                'color': colores[i % len(colores)],
+                'n_puntos': cluster['n_puntos'],
+                'distancia': cluster['distancia'],
+                'metodo': cluster.get('metodo', 'auto')
             })
 
         return jsonify({
@@ -86,7 +107,13 @@ def optimize():
             'clusters': clusters_info,
             'stats': {
                 'total_distance': resultados['distancia_total'],
-                'execution_time': resultados['estadisticas']['tiempo_total']
+                'distance_within_clusters': resultados['distancia_dentro_clusters'],
+                'distance_between_clusters': resultados['distancia_entre_clusters'],
+                'execution_time': resultados['estadisticas']['tiempo_total'],
+                'clustering_time': resultados['estadisticas']['tiempo_clustering'],
+                'tsp_time': resultados['estadisticas']['tiempo_tsp'],
+                'n_points': resultados['n_puntos_total'],
+                'n_clusters': resultados['n_clusters']
             }
         })
 

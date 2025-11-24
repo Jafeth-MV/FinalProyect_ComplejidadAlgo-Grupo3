@@ -142,6 +142,7 @@ def main():
 
     # Configuración
     ARCHIVO_DATASET = 'dataset_tp_complejidad.xlsx'
+    ARCHIVO_CSV = '1_Dataset_Intervenciones_PVD_30062025.csv'
     MAX_PUNTOS = 50  # Limitar para demostración
     N_CLUSTERS = 5
     METODO_TSP = 'auto'  # auto, fuerza_bruta, backtracking, vecino_cercano
@@ -149,8 +150,9 @@ def main():
     # Paso 1: Cargar o generar dataset
     processor = DatasetProcessor()
 
+    # Intentar cargar desde Excel primero
     if os.path.exists(ARCHIVO_DATASET):
-        print(f"📂 Cargando dataset desde archivo...")
+        print(f"📂 Cargando dataset desde archivo Excel...")
         try:
             coordenadas, nombres = processor.cargar_desde_excel(ARCHIVO_DATASET)
 
@@ -159,11 +161,24 @@ def main():
                 coordenadas, nombres = processor.limitar_puntos(MAX_PUNTOS)
 
         except Exception as e:
-            print(f"⚠️ Error al cargar archivo: {e}")
-            print(f"🎲 Generando dataset de muestra...")
-            coordenadas, nombres = processor.crear_dataset_muestra(n_puntos=20)
-    else:
-        print(f"⚠️ Archivo no encontrado: {ARCHIVO_DATASET}")
+            print(f"⚠️ Error al cargar Excel: {e}")
+            coordenadas, nombres = None, None
+
+    # Si no hay Excel, intentar cargar desde CSV
+    if coordenadas is None and os.path.exists(ARCHIVO_CSV):
+        print(f"📂 Cargando dataset desde CSV de intervenciones...")
+        try:
+            coordenadas, nombres = processor.cargar_desde_csv_intervenciones(
+                ARCHIVO_CSV,
+                max_puntos=MAX_PUNTOS
+            )
+        except Exception as e:
+            print(f"⚠️ Error al cargar CSV: {e}")
+            coordenadas, nombres = None, None
+
+    # Si nada funcionó, generar datos de muestra
+    if coordenadas is None:
+        print(f"⚠️ No se pudieron cargar datos desde archivos")
         print(f"🎲 Generando dataset de muestra...")
         coordenadas, nombres = processor.crear_dataset_muestra(n_puntos=20)
 
