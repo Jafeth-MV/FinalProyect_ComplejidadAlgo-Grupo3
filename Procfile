@@ -1,2 +1,1 @@
-web: cd Front && gunicorn app:app
-
+web: cd Front && gunicorn app:app --bind 0.0.0.0:$PORT
