@@ -134,7 +134,7 @@ def visualizar_resultados(coordenadas, nombres, resultados, archivo='clusters_vi
 def main():
     """Función principal."""
     print("="*70)
-    print("SISTEMA DE OPTIMIZACION DE RUTAS DE EVACUACION")
+    print("🚀 SISTEMA DE OPTIMIZACIÓN DE RUTAS DE EVACUACIÓN")
     print("="*70)
     print("Algoritmos: K-Means + TSP (Fuerza Bruta/Backtracking/Vecino Cercano)")
     print("="*70)
@@ -145,52 +145,14 @@ def main():
     ARCHIVO_CSV = '1_Dataset_Intervenciones_PVD_30062025.csv'
     MAX_PUNTOS = 50  # Limitar para demostración
     N_CLUSTERS = 5
-
-    # MENU INTERACTIVO PARA ELEGIR ALGORITMO TSP
-    print("\n" + "="*70)
-    print("SELECCION DE ALGORITMO TSP")
-    print("="*70)
-    print("\nElija el algoritmo TSP a utilizar:\n")
-    print("  1. Fuerza Bruta       - O(n!) - Garantiza solucion optima (n <= 10)")
-    print("  2. Backtracking       - O(n!) con poda - Optimo con poda (n <= 15)")
-    print("  3. Vecino mas Cercano - O(n^2) - Heuristico, rapido y escalable")
-    print("  4. Automatico         - El sistema elige segun el tamano (RECOMENDADO)")
-    print("\n" + "="*70)
-
-    while True:
-        try:
-            opcion = input("\nIngrese su opcion (1-4): ").strip()
-            if opcion == '1':
-                METODO_TSP = 'fuerza_bruta'
-                print("\n[OK] Algoritmo seleccionado: FUERZA BRUTA")
-                break
-            elif opcion == '2':
-                METODO_TSP = 'backtracking'
-                print("\n[OK] Algoritmo seleccionado: BACKTRACKING")
-                break
-            elif opcion == '3':
-                METODO_TSP = 'vecino_cercano'
-                print("\n[OK] Algoritmo seleccionado: VECINO MAS CERCANO")
-                break
-            elif opcion == '4':
-                METODO_TSP = 'auto'
-                print("\n[OK] Algoritmo seleccionado: AUTOMATICO")
-                break
-            else:
-                print("[ERROR] Opcion invalida. Ingrese 1, 2, 3 o 4.")
-        except KeyboardInterrupt:
-            print("\n\n[INFO] Operacion cancelada. Usando modo AUTOMATICO.")
-            METODO_TSP = 'auto'
-            break
-
-    print("\n" + "="*70)
+    METODO_TSP = 'auto'  # auto, fuerza_bruta, backtracking, vecino_cercano
 
     # Paso 1: Cargar o generar dataset
     processor = DatasetProcessor()
 
     # Intentar cargar desde Excel primero
     if os.path.exists(ARCHIVO_DATASET):
-        print(f"Cargando dataset desde archivo Excel...")
+        print(f"📂 Cargando dataset desde archivo Excel...")
         try:
             coordenadas, nombres = processor.cargar_desde_excel(ARCHIVO_DATASET)
 
