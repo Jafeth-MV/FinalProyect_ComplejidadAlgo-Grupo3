@@ -73,6 +73,19 @@
                     <span id="cluster-value">5</span>
                 </div>
                 
+                <div class="control-group">
+                    <label>Algoritmo TSP</label>
+                    <select id="metodo-tsp" class="tsp-selector">
+                        <option value="auto">Automático (Recomendado)</option>
+                        <option value="fuerza_bruta">Fuerza Bruta - O(n!) Óptimo</option>
+                        <option value="backtracking">Backtracking - O(n!) con Poda</option>
+                        <option value="vecino_cercano">Vecino más Cercano - O(n²)</option>
+                    </select>
+                    <small class="tsp-info" id="tsp-description">
+                        El sistema elige automáticamente según el tamaño
+                    </small>
+                </div>
+
                 <button id="optimize-btn" class="primary-btn">
                     <span class="btn-text">Optimizar Ruta</span>
                     <div class="loader hidden"></div>
@@ -80,16 +93,32 @@
             </div>
             
             <div id="stats-panel" class="stats hidden">
-                <h3>📊 Resultados</h3>
+                <h3>Resultados</h3>
+                <div class="stat-item">
+                    <span class="label">Algoritmo usado:</span>
+                    <span class="value" id="metodo-usado">-</span>
+                </div>
                 <div class="stat-item">
                     <span class="label">Distancia Total:</span>
                     <span class="value" id="total-dist">- km</span>
                 </div>
                 <div class="stat-item">
-                    <span class="label">Tiempo Proceso:</span>
+                    <span class="label">Dentro de clusters:</span>
+                    <span class="value" id="dist-intra">- km</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Entre clusters:</span>
+                    <span class="value" id="dist-inter">- km</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Tiempo Total:</span>
                     <span class="value" id="exec-time">- s</span>
                 </div>
-                
+                <div class="stat-item">
+                    <span class="label">Tiempo TSP:</span>
+                    <span class="value" id="tsp-time">- s</span>
+                </div>
+
                 <div class="route-list-container">
                     <h4>Secuencia de Visita</h4>
                     <ol id="route-list"></ol>

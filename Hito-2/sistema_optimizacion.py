@@ -69,6 +69,14 @@ class OptimizadorRutasHibrido:
         resultados_clusters = []
         tiempo_total_tsp = 0
 
+        # Contador de métodos usados
+        metodos_usados = {
+            'fuerza_bruta': 0,
+            'backtracking': 0,
+            'vecino_cercano': 0,
+            'unico_punto': 0
+        }
+
         for i, (coords_cluster, nombres_cluster, indices_originales) in enumerate(clusters):
             n_puntos = len(coords_cluster)
             print(f"\n  Cluster {i} ({n_puntos} puntos):")
@@ -83,14 +91,25 @@ class OptimizadorRutasHibrido:
                     'n_puntos': 1,
                     'distancia': 0
                 }
+                metodos_usados['unico_punto'] += 1
             else:
-                # Resolver TSP
+                # Resolver TSP - FORZAR EL MÉTODO SELECCIONADO
+                print(f"    Método solicitado: {metodo_tsp}")
                 ruta_local, distancia, stats_tsp = resolver_tsp(coords_cluster, metodo_tsp)
                 tiempo_total_tsp += stats_tsp['tiempo']
 
-                print(f"    Método: {stats_tsp['metodo']}")
+                # Contar método usado
+                metodo_real = stats_tsp.get('metodo', 'auto')
+                if metodo_real in metodos_usados:
+                    metodos_usados[metodo_real] += 1
+
+                print(f"    Método ejecutado: {stats_tsp['metodo']}")
                 print(f"    Distancia: {distancia:.4f}")
                 print(f"    Tiempo: {stats_tsp['tiempo']:.4f}s")
+
+                # Mostrar advertencia si existe
+                if 'advertencia' in stats_tsp:
+                    print(f"    ⚠️ {stats_tsp['advertencia']}")
 
             # Mapear ruta local a índices globales
             ruta_global = [indices_originales[idx] for idx in ruta_local]
@@ -101,6 +120,7 @@ class OptimizadorRutasHibrido:
                 'ruta_local': ruta_local,
                 'ruta_global': ruta_global,
                 'distancia': distancia,
+                'metodo': stats_tsp.get('metodo', 'auto'),
                 'nombres': [nombres_cluster[idx] for idx in ruta_local],
                 'coordenadas': coords_cluster[ruta_local].tolist(),
                 'stats_tsp': stats_tsp
@@ -163,7 +183,8 @@ class OptimizadorRutasHibrido:
                 'tiempo_clustering': stats_clustering['tiempo_ejecucion'],
                 'tiempo_tsp': tiempo_total_tsp,
                 'clustering': stats_clustering,
-                'metodo_tsp': metodo_tsp
+                'metodo_tsp': metodo_tsp,
+                'metodos_usados': metodos_usados
             }
         }
 

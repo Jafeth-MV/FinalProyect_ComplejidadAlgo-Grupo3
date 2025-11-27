@@ -310,17 +310,26 @@ def resolver_tsp(
         Tupla (ruta, distancia, estadisticas)
     """
     n = len(coordenadas)
+    metodo_original = metodo
+    advertencia = None
 
-    # Selección automática
+    # Selección automática solo si es 'auto'
     if metodo == 'auto':
         metodo = seleccionar_algoritmo_tsp(n)
+    else:
+        # Verificar si el método seleccionado es apropiado
+        if metodo == 'fuerza_bruta' and n > 10:
+            advertencia = f"ADVERTENCIA: Fuerza Bruta con {n} puntos puede ser muy lento (>{n}! operaciones)"
+        elif metodo == 'backtracking' and n > 15:
+            advertencia = f"ADVERTENCIA: Backtracking con {n} puntos puede tardar mucho tiempo"
 
-    # Resolver según el método
+    # Resolver según el método (FORZAR EL MÉTODO SELECCIONADO)
     if metodo == 'fuerza_bruta':
         solver = TSPFuerzaBruta()
         ruta, distancia = solver.resolver(coordenadas)
         stats = {
             'metodo': 'fuerza_bruta',
+            'metodo_seleccionado': metodo_original,
             'tiempo': solver.tiempo_ejecucion,
             'permutaciones': solver.permutaciones_evaluadas
         }
@@ -330,6 +339,7 @@ def resolver_tsp(
         ruta, distancia = solver.resolver(coordenadas)
         stats = {
             'metodo': 'backtracking',
+            'metodo_seleccionado': metodo_original,
             'tiempo': solver.tiempo_ejecucion,
             'nodos_explorados': solver.nodos_explorados,
             'podas': solver.podas_realizadas
@@ -340,11 +350,14 @@ def resolver_tsp(
         ruta, distancia = solver.resolver(coordenadas)
         stats = {
             'metodo': 'vecino_cercano',
+            'metodo_seleccionado': metodo_original,
             'tiempo': solver.tiempo_ejecucion
         }
 
     stats['n_puntos'] = n
     stats['distancia'] = distancia
+    if advertencia:
+        stats['advertencia'] = advertencia
 
     return ruta, distancia, stats
 
