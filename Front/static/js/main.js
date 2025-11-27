@@ -24,6 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileLabel = fileInput.nextElementSibling.querySelector('.text');
     const nClustersInput = document.getElementById('n-clusters');
     const clusterValue = document.getElementById('cluster-value');
+    const metodoTspSelect = document.getElementById('metodo-tsp');
+    const tspDescription = document.getElementById('tsp-description');
+
+    // TSP Descriptions
+    const tspDescriptions = {
+        'auto': 'El sistema elige automáticamente según el tamaño',
+        'fuerza_bruta': 'Garantiza solución óptima. Solo viable para clusters ≤10 puntos',
+        'backtracking': 'Solución óptima con poda inteligente. Viable para ≤15 puntos',
+        'vecino_cercano': 'Heurística rápida y escalable. Ideal para muchos puntos'
+    };
 
     // Tab Switching
     tabBtns.forEach(btn => {
@@ -47,12 +57,19 @@ document.addEventListener('DOMContentLoaded', () => {
         clusterValue.textContent = e.target.value;
     });
 
+    // TSP Method Selector
+    metodoTspSelect.addEventListener('change', (e) => {
+        const metodo = e.target.value;
+        tspDescription.textContent = tspDescriptions[metodo];
+    });
+
     // Optimize Button Click
     optimizeBtn.addEventListener('click', async () => {
         const mode = document.querySelector('.tab-btn.active').dataset.tab;
         const formData = new FormData();
 
         formData.append('n_clusters', nClustersInput.value);
+        formData.append('metodo_tsp', metodoTspSelect.value); // AGREGAR METODO TSP
 
         if (mode === 'csv') {
             // Use CSV database
@@ -111,8 +128,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show Stats
         statsPanel.classList.remove('hidden');
-        document.getElementById('total-dist').textContent = `${data.stats.total_distance.toFixed(2)} km`;
-        document.getElementById('exec-time').textContent = `${data.stats.execution_time.toFixed(3)} s`;
+
+        // Mostrar método TSP usado
+        if (data.stats.metodos_usados) {
+            const metodosUsados = Object.entries(data.stats.metodos_usados)
+                .filter(([_, count]) => count > 0)
+                .map(([metodo, count]) => `${metodo} (${count}x)`)
+                .join(', ');
+            document.getElementById('metodo-usado').textContent = metodosUsados || 'auto';
+        } else {
+            document.getElementById('metodo-usado').textContent = 'auto';
+        }
+
+        // Mostrar distancias
+        document.getElementById('total-dist').textContent = `${data.stats.total_distance.toFixed(4)} km`;
+
+        if (data.stats.distance_within_clusters !== undefined) {
+            document.getElementById('dist-intra').textContent = `${data.stats.distance_within_clusters.toFixed(4)} km`;
+        }
+
+        if (data.stats.distance_between_clusters !== undefined) {
+            document.getElementById('dist-inter').textContent = `${data.stats.distance_between_clusters.toFixed(4)} km`;
+        }
+
+        // Mostrar tiempos
+        document.getElementById('exec-time').textContent = `${data.stats.execution_time.toFixed(4)} s`;
+
+        if (data.stats.tsp_time !== undefined) {
+            document.getElementById('tsp-time').textContent = `${data.stats.tsp_time.toFixed(4)} s`;
+        }
 
         const routeList = document.getElementById('route-list');
         routeList.innerHTML = '';
