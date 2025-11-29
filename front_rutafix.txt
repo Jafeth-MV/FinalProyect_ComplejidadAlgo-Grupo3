@@ -1,0 +1,45 @@
+rutafix-frontend/
+├── domain/
+│   ├── models/
+│   │   ├── Node.ts                 # id, lat, lon, ubigeo
+│   │   ├── Edge.ts                 # u, v, weight
+│   │   └── Cluster.ts              # id, centroid, items
+│   └── services/
+│       └── graph_transform.ts      # Mapeos y validaciones de datos
+├── application/
+│   ├── use_cases/
+│   │   ├── display_clusters.ts     # Orquesta cargar y pintar clusters
+│   │   ├── display_route.ts        # Pinta ruta óptima
+│   │   └── display_mst.ts          # Pinta MST
+│   └── dtos/
+│       ├── ClusterResponse.ts
+│       ├── RouteResponse.ts
+│       └── MSTResponse.ts
+├── infrastructure/
+│   ├── api/
+│   │   ├── client.ts               # Axios/Fetch configurado
+│   │   ├── graph_api.ts            # Llama /graph
+│   │   ├── cluster_api.ts          # Llama /clusters
+│   │   ├── route_api.ts            # Llama /routes
+│   │   └── mst_api.ts              # Llama /mst
+│   └── persistence/
+│       └── cache.ts                # (Opcional) cache de respuestas
+├── interfaces/
+│   └── components/
+│       ├── MapView.tsx             # Folium embebido o Leaflet/WebMap
+│       ├── ClusterPanel.tsx
+│       ├── RoutePanel.tsx
+│       └── MSTPanel.tsx
+├── shared/
+│   └── utils/
+│       ├── colors.ts               # Paleta de clusters
+│       └── formatters.ts           # Formateo de distancias/tiempos
+├── public/
+├── src/
+│   ├── App.tsx
+│   └── main.tsx
+├── tests/
+│   ├── components/
+│   └── use_cases/
+├── package.json
+└── Dockerfile
