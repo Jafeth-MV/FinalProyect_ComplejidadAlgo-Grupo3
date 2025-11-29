@@ -1,25 +1,7 @@
 # RutaFix: Sistema de Optimización de Rutas de Intervención Vial
 
-![Status](https://img.shields.io/badge/Estado-Completado-success)
-![Version](https://img.shields.io/badge/Versión-2.0-blue)
-![Tech](https://img.shields.io/badge/Stack-FastAPI%20%7C%20React%20%7C%20Leaflet-orange)
 
 **Proyecto de Complejidad Algorítmica - Grupo 03**  
-Universidad Peruana de Ciencias Aplicadas (UPC) - 2024-2
-
----
-
-## Descripción General
-
-**RutaFix** es una plataforma avanzada para la planificación y optimización de rutas de mantenimiento vial en el Perú. Utiliza algoritmos de **Inteligencia Artificial** y **Teoría de Grafos** para minimizar distancias y tiempos de traslado entre puntos de intervención.
-
-El sistema procesa miles de registros reales, los agrupa inteligentemente mediante **Clustering (K-Means)** y resuelve el problema del viajante (TSP) utilizando una estrategia híbrida de algoritmos (**Fuerza Bruta, Backtracking y Vecino Más Cercano**).
-
----
-
-## Arquitectura del Sistema (DDD)
-
-El proyecto sigue los principios de **Domain-Driven Design (DDD)** para garantizar un código limpio, escalable y mantenible.
 
 ### Capas del Sistema
 
