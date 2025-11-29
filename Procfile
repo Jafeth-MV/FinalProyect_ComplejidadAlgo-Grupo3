@@ -1,1 +1,1 @@
-web: cd Front && gunicorn app:app --bind 0.0.0.0:$PORT
+web: uvicorn Back.infrastructure.api.main:app --host 0.0.0.0 --port $PORT

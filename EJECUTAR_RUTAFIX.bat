@@ -4,15 +4,20 @@ title RutaFix - Sistema de Optimización de Rutas
 color 0A
 
 echo ════════════════════════════════════════════════════════
-echo          RUTAFIX - SISTEMA DE OPTIMIZACIÓN
+echo          RUTAFIX v2.0 - SISTEMA DE OPTIMIZACIÓN
 echo ════════════════════════════════════════════════════════
 echo.
-echo Iniciando servidor...
+echo Iniciando servicios...
 echo.
 
-cd /d "%~dp0Front"
-start http://localhost:5000
-python app.py
+:: Start Backend in a new window
+start "RutaFix Backend" cmd /k "cd Back && uvicorn infrastructure.api.main:app --reload"
 
+:: Start Frontend in a new window
+start "RutaFix Frontend" cmd /k "cd Front && npm run dev"
+
+echo Servidores iniciados!
+echo Backend: http://localhost:8000
+echo Frontend: http://localhost:5173
+echo.
 pause
-

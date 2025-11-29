@@ -1,12 +1,17 @@
 services:
+  # Backend Service (FastAPI)
   - type: web
-    name: rutafix
+    name: rutafix-backend
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: cd Front && python app.py
+    startCommand: uvicorn Back.infrastructure.api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: PORT
-        value: 5000
 
+  # Frontend Service (Static Site)
+  - type: static
+    name: rutafix-frontend
+    env: node
+    buildCommand: cd Front && npm install && npm run build
+    staticPublishPath: Front/dist
