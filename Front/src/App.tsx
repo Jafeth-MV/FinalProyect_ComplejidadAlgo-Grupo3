@@ -58,7 +58,7 @@ function App() {
   return (
     <div className="flex h-screen bg-[#1a1d21] text-white font-sans">
       {/* Sidebar */}
-      <div className="w-[350px] bg-[#111315] p-6 flex flex-col gap-6 shadow-2xl z-20 border-r border-gray-800 overflow-y-auto">
+      <div className="w-[350px] bg-[#111315] p-6 flex flex-col gap-6 shadow-2xl z-20 border-r border-gray-800 overflow-y-auto custom-scrollbar">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
