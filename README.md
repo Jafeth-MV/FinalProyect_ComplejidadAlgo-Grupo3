@@ -31,24 +31,20 @@ El proyecto sigue una arquitectura basada en **Domain-Driven Design (DDD)** para
 
 ## 📂 Estructura del Proyecto
 
-```mermaid
-graph TD
-    Root[📂 Proyecto] --> Back[📂 Back (Backend FastAPI)]
-    Root --> Front[📂 Front (Frontend React)]
-
-    subgraph Backend
-    Back --> Domain[📂 domain]
-    Back --> Infra[📂 infrastructure]
-    
-    Domain --> Services[📂 services]
-    Infra --> API[📂 api]
-    end
-
-    subgraph Frontend
-    Front --> Src[📂 src]
-    Src --> Components[📂 components]
-    Src --> App[App.tsx]
-    end
+```text
+📂 FinalProyect_ComplejidadAlgo-Grupo3
+ ├── 📂 Back (Backend Python/FastAPI)
+ │    ├── 📂 domain
+ │    │    ├── 📂 models       # Definición de datos (Cluster, Route)
+ │    │    └── 📂 services     # Lógica (TSP, K-Means)
+ │    └── 📂 infrastructure
+ │         ├── 📂 api          # Endpoints que reciben peticiones
+ │         └── 📂 repositories # Lectura de archivos CSV/Excel
+ │
+ └── 📂 Front (Frontend React/TypeScript)
+      └── 📂 src
+           ├── 📂 components   # Piezas visuales (Mapa, Sidebar)
+           └── 📄 App.tsx      # Cerebro de la interfaz
 ```
 
 ### Guía de Archivos Clave
