@@ -1,6 +1,4 @@
-"""
-Script ultra-simple para generar coordenadas
-"""
+
 
 import pandas as pd
 import numpy as np
@@ -67,7 +65,7 @@ try:
     print(f"Guardando en {archivo_salida}...")
     df_out.to_excel(archivo_salida, index=False)
 
-    print(f"✓ Archivo guardado exitosamente")
+    print(f"Archivo guardado exitosamente")
     print(f"\nPrimeros 5 registros:")
     print(df_out.head())
 

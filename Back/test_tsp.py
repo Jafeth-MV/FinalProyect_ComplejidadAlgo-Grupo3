@@ -1,11 +1,7 @@
-"""
-Script de verificacion de algoritmos TSP - INTERACTIVO
-"""
 from tsp_algorithms import resolver_tsp
 import numpy as np
 
 def mostrar_menu():
-    """Muestra el menu de seleccion de algoritmo TSP"""
     print("\n" + "="*60)
     print("SISTEMA DE OPTIMIZACION DE RUTAS - ALGORITMOS TSP")
     print("="*60)
@@ -19,7 +15,6 @@ def mostrar_menu():
     print("\n" + "="*60)
 
 def obtener_opcion():
-    """Obtiene la opcion del usuario"""
     while True:
         try:
             opcion = input("\nIngrese su opcion (0-5): ").strip()
@@ -32,7 +27,6 @@ def obtener_opcion():
             return '0'
 
 def ejecutar_tsp(distancias, metodo):
-    """Ejecuta el algoritmo TSP seleccionado"""
     print(f"\n{'='*60}")
     print(f"[EJECUTANDO] {metodo.upper().replace('_', ' ')}")
     print(f"{'='*60}")
@@ -56,7 +50,6 @@ def ejecutar_tsp(distancias, metodo):
     return ruta, distancia, stats
 
 def probar_todos(distancias):
-    """Prueba todos los algoritmos y compara resultados"""
     print("\n" + "="*60)
     print("[COMPARACION] Probando todos los algoritmos")
     print("="*60)
@@ -87,7 +80,6 @@ def probar_todos(distancias):
     print("\n" + "="*60)
 
 def main():
-    """Funcion principal"""
     # Matriz de distancias de prueba (3 puntos)
     distancias = np.array([
         [0, 1, 2],
@@ -126,4 +118,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

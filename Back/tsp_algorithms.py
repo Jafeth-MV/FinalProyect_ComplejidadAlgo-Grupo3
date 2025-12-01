@@ -1,10 +1,4 @@
-"""
-TSP Algorithms Implementation
-Implementa 3 algoritmos para el Problema del Viajero (TSP):
-1. Fuerza Bruta - O(n!)
-2. Backtracking con Poda - O(n!) optimizado
-3. Vecino más Cercano - O(n²)
-"""
+
 
 import numpy as np
 from itertools import permutations
@@ -13,30 +7,12 @@ from typing import List, Tuple
 
 
 def calcular_distancia(coord1: np.ndarray, coord2: np.ndarray) -> float:
-    """
-    Calcula la distancia euclidiana entre dos coordenadas.
 
-    Args:
-        coord1: Primera coordenada [lat, lon]
-        coord2: Segunda coordenada [lat, lon]
-
-    Returns:
-        Distancia euclidiana
-    """
     return np.linalg.norm(coord1 - coord2)
 
 
 def calcular_distancia_total(coordenadas: np.ndarray, ruta: List[int]) -> float:
-    """
-    Calcula la distancia total de una ruta.
 
-    Args:
-        coordenadas: Array de coordenadas (N, 2)
-        ruta: Lista de índices que representa la ruta
-
-    Returns:
-        Distancia total
-    """
     distancia = 0
     for i in range(len(ruta) - 1):
         distancia += calcular_distancia(
@@ -52,11 +28,7 @@ def calcular_distancia_total(coordenadas: np.ndarray, ruta: List[int]) -> float:
 
 
 class TSPFuerzaBruta:
-    """
-    Resuelve TSP usando fuerza bruta.
-    Complejidad: O(n!)
-    Recomendado: n <= 10
-    """
+
 
     def __init__(self):
         self.mejor_ruta = None
@@ -65,15 +37,7 @@ class TSPFuerzaBruta:
         self.permutaciones_evaluadas = 0
 
     def resolver(self, coordenadas: np.ndarray) -> Tuple[List[int], float]:
-        """
-        Resuelve TSP probando todas las permutaciones posibles.
 
-        Args:
-            coordenadas: Array de coordenadas (N, 2)
-
-        Returns:
-            Tupla (mejor_ruta, mejor_distancia)
-        """
         n = len(coordenadas)
 
         if n > 10:
@@ -107,11 +71,7 @@ class TSPFuerzaBruta:
 
 
 class TSPBacktracking:
-    """
-    Resuelve TSP usando backtracking con poda.
-    Complejidad: O(n!) pero con optimización significativa
-    Recomendado: n <= 15
-    """
+
 
     def __init__(self):
         self.mejor_ruta = None
@@ -121,15 +81,7 @@ class TSPBacktracking:
         self.podas_realizadas = 0
 
     def resolver(self, coordenadas: np.ndarray) -> Tuple[List[int], float]:
-        """
-        Resuelve TSP usando backtracking con poda.
 
-        Args:
-            coordenadas: Array de coordenadas (N, 2)
-
-        Returns:
-            Tupla (mejor_ruta, mejor_distancia)
-        """
         n = len(coordenadas)
 
         if n > 15:
@@ -161,9 +113,7 @@ class TSPBacktracking:
         distancia_actual: float,
         n: int
     ):
-        """
-        Función recursiva de backtracking.
-        """
+
         self.nodos_explorados += 1
 
         # Poda: si la distancia actual ya supera la mejor, no continuar
@@ -216,11 +166,7 @@ class TSPBacktracking:
 
 
 class TSPVecinoMasCercano:
-    """
-    Resuelve TSP usando heurística del vecino más cercano.
-    Complejidad: O(n²)
-    Recomendado: cualquier n (escalable)
-    """
+
 
     def __init__(self):
         self.ruta = None
@@ -228,16 +174,7 @@ class TSPVecinoMasCercano:
         self.tiempo_ejecucion = 0
 
     def resolver(self, coordenadas: np.ndarray, inicio: int = 0) -> Tuple[List[int], float]:
-        """
-        Resuelve TSP usando vecino más cercano.
 
-        Args:
-            coordenadas: Array de coordenadas (N, 2)
-            inicio: Nodo inicial
-
-        Returns:
-            Tupla (ruta, distancia)
-        """
         inicio_tiempo = time.time()
 
         n = len(coordenadas)
@@ -278,15 +215,7 @@ class TSPVecinoMasCercano:
 
 
 def seleccionar_algoritmo_tsp(n_puntos: int) -> str:
-    """
-    Selecciona el algoritmo TSP más apropiado según el número de puntos.
 
-    Args:
-        n_puntos: Número de puntos a optimizar
-
-    Returns:
-        Nombre del algoritmo recomendado
-    """
     if n_puntos <= 10:
         return 'fuerza_bruta'
     elif n_puntos <= 15:
@@ -299,16 +228,7 @@ def resolver_tsp(
     coordenadas: np.ndarray,
     metodo: str = 'auto'
 ) -> Tuple[List[int], float, dict]:
-    """
-    Resuelve TSP con el método especificado.
 
-    Args:
-        coordenadas: Array de coordenadas (N, 2)
-        metodo: 'fuerza_bruta', 'backtracking', 'vecino_cercano', o 'auto'
-
-    Returns:
-        Tupla (ruta, distancia, estadisticas)
-    """
     n = len(coordenadas)
     metodo_original = metodo
     advertencia = None

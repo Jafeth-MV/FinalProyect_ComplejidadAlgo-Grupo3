@@ -1,9 +1,3 @@
-"""
-K-Means Clustering Implementation
-Algoritmo: Divide y Vencerás
-Complejidad: O(n * k * i) donde n=puntos, k=clusters, i=iteraciones
-"""
-
 import numpy as np
 from typing import List, Tuple
 from sklearn.cluster import KMeans
@@ -11,19 +5,8 @@ import time
 
 
 class KMeansClusterer:
-    """
-    Implementa K-Means clustering para dividir el problema TSP grande
-    en subproblemas más pequeños y manejables.
-    """
 
     def __init__(self, n_clusters: int = 5, random_state: int = 42):
-        """
-        Inicializa el clusterer.
-
-        Args:
-            n_clusters: Número de clusters a crear
-            random_state: Semilla para reproducibilidad
-        """
         self.n_clusters = n_clusters
         self.random_state = random_state
         self.model = None
@@ -32,15 +15,6 @@ class KMeansClusterer:
         self.tiempo_ejecucion = 0
 
     def fit(self, coordenadas: np.ndarray) -> 'KMeansClusterer':
-        """
-        Ajusta el modelo K-Means a las coordenadas.
-
-        Args:
-            coordenadas: Array de coordenadas (N, 2) [lat, lon]
-
-        Returns:
-            self
-        """
         inicio = time.time()
 
         # Crear y ajustar el modelo
@@ -64,16 +38,6 @@ class KMeansClusterer:
         coordenadas: np.ndarray,
         nombres: List[str]
     ) -> List[Tuple[np.ndarray, List[str], List[int]]]:
-        """
-        Divide las coordenadas en clusters.
-
-        Args:
-            coordenadas: Array de coordenadas (N, 2)
-            nombres: Lista de nombres de los puntos
-
-        Returns:
-            Lista de tuplas (coordenadas_cluster, nombres_cluster, indices_originales)
-        """
         if self.labels_ is None:
             self.fit(coordenadas)
 
@@ -95,15 +59,6 @@ class KMeansClusterer:
         return clusters
 
     def obtener_estadisticas(self, coordenadas: np.ndarray) -> dict:
-        """
-        Calcula estadísticas del clustering.
-
-        Args:
-            coordenadas: Array de coordenadas
-
-        Returns:
-            Diccionario con estadísticas
-        """
         if self.labels_ is None:
             return {}
 
@@ -128,12 +83,6 @@ class KMeansClusterer:
         }
 
     def calcular_orden_clusters(self) -> List[int]:
-        """
-        Calcula un orden óptimo para visitar los clusters usando vecino más cercano.
-
-        Returns:
-            Lista de índices de clusters en orden
-        """
         if self.cluster_centers_ is None:
             return list(range(self.n_clusters))
 
@@ -166,4 +115,3 @@ class KMeansClusterer:
                 actual = siguiente
 
         return orden
-

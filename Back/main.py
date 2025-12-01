@@ -1,8 +1,3 @@
-"""
-Script Principal - Sistema de Optimización de Rutas
-Ejecuta el sistema completo de optimización híbrida
-"""
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,16 +8,7 @@ from sistema_optimizacion import OptimizadorRutasHibrido
 
 
 def visualizar_resultados(coordenadas, nombres, resultados, archivo='clusters_visualizacion.png'):
-    """
-    Visualiza los clusters y rutas optimizadas.
-
-    Args:
-        coordenadas: Array de coordenadas
-        nombres: Lista de nombres
-        resultados: Resultados de la optimización
-        archivo: Nombre del archivo de salida
-    """
-    print(f"\n📊 Generando visualización...")
+    print(f"\nGenerando visualización...")
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
 
@@ -127,12 +113,11 @@ def visualizar_resultados(coordenadas, nombres, resultados, archivo='clusters_vi
 
     plt.tight_layout()
     plt.savefig(archivo, dpi=150, bbox_inches='tight')
-    print(f"✓ Visualización guardada: {archivo}")
+    print(f"Visualización guardada: {archivo}")
     plt.close()
 
 
 def main():
-    """Función principal."""
     print("="*70)
     print("SISTEMA DE OPTIMIZACION DE RUTAS DE EVACUACION")
     print("="*70)
@@ -199,37 +184,37 @@ def main():
                 coordenadas, nombres = processor.limitar_puntos(MAX_PUNTOS)
 
         except Exception as e:
-            print(f"⚠️ Error al cargar Excel: {e}")
+            print(f"Error al cargar Excel: {e}")
             coordenadas, nombres = None, None
 
     # Si no hay Excel, intentar cargar desde CSV
     if coordenadas is None and os.path.exists(ARCHIVO_CSV):
-        print(f"📂 Cargando dataset desde CSV de intervenciones...")
+        print(f"Cargando dataset desde CSV de intervenciones...")
         try:
             coordenadas, nombres = processor.cargar_desde_csv_intervenciones(
                 ARCHIVO_CSV,
                 max_puntos=MAX_PUNTOS
             )
         except Exception as e:
-            print(f"⚠️ Error al cargar CSV: {e}")
+            print(f"Error al cargar CSV: {e}")
             coordenadas, nombres = None, None
 
     # Si nada funcionó, generar datos de muestra
     if coordenadas is None:
-        print(f"⚠️ No se pudieron cargar datos desde archivos")
-        print(f"🎲 Generando dataset de muestra...")
+        print(f"No se pudieron cargar datos desde archivos")
+        print(f"Generando dataset de muestra...")
         coordenadas, nombres = processor.crear_dataset_muestra(n_puntos=20)
 
     # Mostrar estadísticas del dataset
     stats_dataset = processor.obtener_estadisticas()
-    print(f"\n📊 Estadísticas del Dataset:")
+    print(f"\nEstadísticas del Dataset:")
     print(f"  - Puntos: {stats_dataset['n_puntos']}")
     print(f"  - Latitud: [{stats_dataset['lat_min']:.4f}, {stats_dataset['lat_max']:.4f}]")
     print(f"  - Longitud: [{stats_dataset['lon_min']:.4f}, {stats_dataset['lon_max']:.4f}]")
 
     # Paso 2: Optimizar rutas
     print(f"\n{'='*70}")
-    print(f"🔧 CONFIGURACIÓN DE OPTIMIZACIÓN")
+    print(f"CONFIGURACIÓN DE OPTIMIZACIÓN")
     print(f"{'='*70}")
     print(f"Clusters: {N_CLUSTERS}")
     print(f"Método TSP: {METODO_TSP}")
@@ -239,7 +224,7 @@ def main():
     resultados = optimizador.optimizar(coordenadas, nombres, metodo_tsp=METODO_TSP)
 
     # Paso 3: Mostrar ruta
-    print(f"\n📍 RUTA OPTIMIZADA:")
+    print(f"\nRUTA OPTIMIZADA:")
     print(f"{'='*70}")
     ruta_nombres = optimizador.obtener_ruta_nombres()
     for i, nombre in enumerate(ruta_nombres[:20], 1):  # Mostrar primeros 20
@@ -260,17 +245,17 @@ def main():
     try:
         visualizar_resultados(coordenadas, nombres, resultados, archivo_img)
     except Exception as e:
-        print(f"⚠️ Error al generar visualización: {e}")
+        print(f"Error al generar visualización: {e}")
 
     # Paso 6: Análisis de complejidad
     print(f"\n{'='*70}")
-    print(f"📈 ANÁLISIS DE COMPLEJIDAD")
+    print(f"ANÁLISIS DE COMPLEJIDAD")
     print(f"{'='*70}")
 
     n_total = len(coordenadas)
 
     # Complejidad sin optimización
-    print(f"\n❌ Sin Optimización (TSP directo sobre {n_total} puntos):")
+    print(f"\nSin Optimización (TSP directo sobre {n_total} puntos):")
     if n_total <= 10:
         import math
         print(f"   Complejidad: O({n_total}!) ≈ {math.factorial(n_total):,} operaciones")
@@ -281,10 +266,10 @@ def main():
         print(f"   Viable con Backtracking")
     else:
         print(f"   Complejidad: O({n_total}!) - INTRATABLE")
-        print(f"   ⚠️ Imposible con algoritmos exactos")
+        print(f"   Imposible con algoritmos exactos")
 
     # Complejidad con optimización
-    print(f"\n✅ Con Optimización Híbrida (K-Means + TSP):")
+    print(f"\nCon Optimización Híbrida (K-Means + TSP):")
     print(f"   Clusters: {N_CLUSTERS}")
 
     tamano_promedio = n_total // N_CLUSTERS
@@ -297,17 +282,16 @@ def main():
         print(f"   Complejidad total: O({N_CLUSTERS} × {tamano_promedio}!) ≈ {N_CLUSTERS * complejidad_cluster:,} ops")
     else:
         print(f"   Complejidad: O(n²) con heurística Vecino más Cercano")
-        print(f"   ✓ ESCALABLE y EFICIENTE")
+        print(f"   ESCALABLE y EFICIENTE")
 
     print(f"\n{'='*70}")
-    print(f"✅ OPTIMIZACIÓN COMPLETADA")
+    print(f"OPTIMIZACIÓN COMPLETADA")
     print(f"{'='*70}")
-    print(f"\n📁 Archivos generados:")
+    print(f"\nArchivos generados:")
     print(f"  - {archivo_json}")
     print(f"  - {archivo_img}")
-    print(f"\n¡Listo! 🎉")
+    print(f"\n¡Listo!")
 
 
 if __name__ == "__main__":
     main()
-

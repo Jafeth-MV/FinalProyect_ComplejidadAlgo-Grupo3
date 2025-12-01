@@ -1,8 +1,3 @@
-"""
-Sistema de Optimización Híbrido
-Combina K-Means (Divide y Vencerás) con TSP
-"""
-
 import numpy as np
 from typing import List, Dict, Any, Optional
 import time
@@ -13,23 +8,8 @@ from tsp_algorithms import resolver_tsp, calcular_distancia
 
 
 class OptimizadorRutasHibrido:
-    """
-    Sistema híbrido que combina clustering K-Means con TSP.
-
-    Estrategia:
-    1. Divide N puntos en K clusters (K-Means)
-    2. Resuelve TSP para cada cluster
-    3. Ordena los clusters para minimizar distancia total
-    """
 
     def __init__(self, n_clusters: int = 5, random_state: int = 42):
-        """
-        Inicializa el optimizador.
-
-        Args:
-            n_clusters: Número de clusters a crear
-            random_state: Semilla para reproducibilidad
-        """
         self.n_clusters = n_clusters
         self.random_state = random_state
         self.clusterer = KMeansClusterer(n_clusters, random_state)
@@ -41,31 +21,20 @@ class OptimizadorRutasHibrido:
         nombres: List[str],
         metodo_tsp: str = 'auto'
     ) -> Dict[str, Any]:
-        """
-        Optimiza las rutas usando el sistema híbrido.
-
-        Args:
-            coordenadas: Array de coordenadas (N, 2) [lat, lon]
-            nombres: Lista de nombres de los puntos
-            metodo_tsp: Método TSP a usar ('auto', 'fuerza_bruta', 'backtracking', 'vecino_cercano')
-
-        Returns:
-            Diccionario con resultados completos
-        """
         inicio_total = time.time()
 
         # Paso 1: Clustering
-        print(f"🔹 Aplicando K-Means con {self.n_clusters} clusters...")
+        print(f"Aplicando K-Means con {self.n_clusters} clusters...")
         self.clusterer.fit(coordenadas)
         clusters = self.clusterer.dividir_en_clusters(coordenadas, nombres)
         stats_clustering = self.clusterer.obtener_estadisticas(coordenadas)
 
-        print(f"✓ Clusters creados: {len(clusters)}")
+        print(f"Clusters creados: {len(clusters)}")
         for i, (coords, _, _) in enumerate(clusters):
             print(f"  Cluster {i}: {len(coords)} puntos")
 
         # Paso 2: Resolver TSP para cada cluster
-        print(f"\n🔹 Resolviendo TSP para cada cluster...")
+        print(f"\nResolviendo TSP para cada cluster...")
         resultados_clusters = []
         tiempo_total_tsp = 0
 
@@ -109,7 +78,7 @@ class OptimizadorRutasHibrido:
 
                 # Mostrar advertencia si existe
                 if 'advertencia' in stats_tsp:
-                    print(f"    ⚠️ {stats_tsp['advertencia']}")
+                    print(f"    {stats_tsp['advertencia']}")
 
             # Mapear ruta local a índices globales
             ruta_global = [indices_originales[idx] for idx in ruta_local]
@@ -127,7 +96,7 @@ class OptimizadorRutasHibrido:
             })
 
         # Paso 3: Ordenar clusters
-        print(f"\n🔹 Ordenando clusters...")
+        print(f"\nOrdenando clusters...")
         orden_clusters = self.clusterer.calcular_orden_clusters()
 
         # Paso 4: Construir ruta global
@@ -190,7 +159,7 @@ class OptimizadorRutasHibrido:
 
         # Imprimir resumen
         print(f"\n" + "="*60)
-        print(f"📊 RESUMEN DE OPTIMIZACIÓN")
+        print(f"RESUMEN DE OPTIMIZACIÓN")
         print(f"="*60)
         print(f"Puntos totales: {len(coordenadas)}")
         print(f"Clusters: {len(clusters)}")
@@ -205,12 +174,6 @@ class OptimizadorRutasHibrido:
         return self.resultados
 
     def obtener_ruta_nombres(self) -> List[str]:
-        """
-        Obtiene la ruta en términos de nombres de lugares.
-
-        Returns:
-            Lista de nombres en orden de visita
-        """
         if self.resultados is None:
             return []
 
@@ -222,14 +185,8 @@ class OptimizadorRutasHibrido:
         return nombres_ordenados
 
     def exportar_resultados(self, archivo: str = 'resultados_optimizacion.json'):
-        """
-        Exporta los resultados a un archivo JSON.
-
-        Args:
-            archivo: Nombre del archivo de salida
-        """
         if self.resultados is None:
-            print("⚠️ No hay resultados para exportar")
+            print("No hay resultados para exportar")
             return
 
         # Convertir arrays numpy a listas para JSON
@@ -238,10 +195,9 @@ class OptimizadorRutasHibrido:
         with open(archivo, 'w', encoding='utf-8') as f:
             json.dump(resultados_json, f, indent=2, ensure_ascii=False)
 
-        print(f"✓ Resultados exportados a: {archivo}")
+        print(f"Resultados exportados a: {archivo}")
 
     def _preparar_para_json(self, obj):
-        """Convierte objetos numpy a tipos nativos de Python."""
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         elif isinstance(obj, np.integer):
@@ -254,4 +210,3 @@ class OptimizadorRutasHibrido:
             return [self._preparar_para_json(item) for item in obj]
         else:
             return obj
-

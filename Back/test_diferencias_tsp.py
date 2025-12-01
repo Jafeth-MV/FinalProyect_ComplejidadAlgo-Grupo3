@@ -1,6 +1,3 @@
-"""
-Script para demostrar la diferencia entre los algoritmos TSP
-"""
 import numpy as np
 import sys
 import os
@@ -116,4 +113,3 @@ else:
             print(f"    • {r['metodo']} es {pct_peor:.2f}% más largo (heurístico)")
 
 print()
-

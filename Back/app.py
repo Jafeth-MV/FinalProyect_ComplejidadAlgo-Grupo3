@@ -7,7 +7,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return jsonify({
-        "mensaje": "🚀 API de Optimización de Rutas activa",
+        "mensaje": "API de Optimización de Rutas activa",
         "endpoints": {
             "/": "Este mensaje",
             "/optimizar": "Ejecuta la optimización"
@@ -20,7 +20,7 @@ def optimizar():
         ejecutar_optimizacion()
         return jsonify({
             "status": "success",
-            "mensaje": "✅ Optimización completada"
+            "mensaje": "Optimización completada"
         })
     except Exception as e:
         return jsonify({

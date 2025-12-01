@@ -1,8 +1,3 @@
-"""
-Dataset Processor
-Procesa datasets de Excel con coordenadas y nombres de lugares
-"""
-
 import pandas as pd
 import numpy as np
 from typing import Tuple, List, Optional
@@ -10,9 +5,6 @@ from geopy.distance import geodesic
 
 
 class DatasetProcessor:
-    """
-    Procesa datasets de coordenadas desde archivos Excel.
-    """
 
     def __init__(self):
         self.df = None
@@ -24,17 +16,7 @@ class DatasetProcessor:
         archivo: str = '1_Dataset_Intervenciones_PVD_30062025.csv',
         max_puntos: int = 50
     ) -> Tuple[np.ndarray, List[str]]:
-        """
-        Carga datos desde el CSV de intervenciones y genera coordenadas aproximadas.
-
-        Args:
-            archivo: Ruta al archivo CSV
-            max_puntos: Número máximo de puntos a generar
-
-        Returns:
-            Tupla (coordenadas, nombres)
-        """
-        print(f"📂 Cargando CSV de intervenciones: {archivo}")
+        print(f"Cargando CSV de intervenciones: {archivo}")
 
         # Coordenadas de capitales de departamento
         coords_departamentos = {
@@ -69,12 +51,12 @@ class DatasetProcessor:
             for encoding in ['latin1', 'iso-8859-1', 'cp1252']:
                 try:
                     self.df = pd.read_csv(archivo, sep=';', encoding=encoding, nrows=200)
-                    print(f"✓ CSV cargado con encoding {encoding}: {len(self.df)} registros")
+                    print(f"CSV cargado con encoding {encoding}: {len(self.df)} registros")
                     break
                 except:
                     continue
         except Exception as e:
-            print(f"❌ Error al cargar CSV: {e}")
+            print(f"Error al cargar CSV: {e}")
             raise
 
         # Obtener rutas únicas
@@ -116,7 +98,7 @@ class DatasetProcessor:
         self.coordenadas = np.array(coordenadas_list)
         self.nombres = nombres_list
 
-        print(f"✓ Generadas {len(self.nombres)} ubicaciones desde el CSV")
+        print(f"Generadas {len(self.nombres)} ubicaciones desde el CSV")
 
         return self.coordenadas, self.nombres
 
@@ -127,25 +109,13 @@ class DatasetProcessor:
         col_latitud: str = 'Latitud',
         col_longitud: str = 'Longitud'
     ) -> Tuple[np.ndarray, List[str]]:
-        """
-        Carga coordenadas desde un archivo Excel.
-
-        Args:
-            archivo: Ruta al archivo Excel
-            col_nombre: Nombre de la columna con nombres
-            col_latitud: Nombre de la columna con latitudes
-            col_longitud: Nombre de la columna con longitudes
-
-        Returns:
-            Tupla (coordenadas, nombres)
-        """
-        print(f"📂 Cargando dataset: {archivo}")
+        print(f"Cargando dataset: {archivo}")
 
         try:
             self.df = pd.read_excel(archivo)
-            print(f"✓ Archivo cargado: {len(self.df)} registros")
+            print(f"Archivo cargado: {len(self.df)} registros")
         except Exception as e:
-            print(f"❌ Error al cargar archivo: {e}")
+            print(f"Error al cargar archivo: {e}")
             raise
 
         # Verificar columnas
@@ -153,12 +123,12 @@ class DatasetProcessor:
         columnas_faltantes = [col for col in columnas_necesarias if col not in self.df.columns]
 
         if columnas_faltantes:
-            print(f"❌ Columnas faltantes: {columnas_faltantes}")
+            print(f"Columnas faltantes: {columnas_faltantes}")
             print(f"   Columnas disponibles: {self.df.columns.tolist()}")
             raise ValueError(f"Columnas faltantes: {columnas_faltantes}")
 
         # Limpiar datos
-        print("🧹 Limpiando datos...")
+        print("Limpiando datos...")
         df_limpio = self.df.copy()
 
         # Eliminar filas con valores nulos
@@ -177,7 +147,7 @@ class DatasetProcessor:
             (df_limpio[col_longitud] >= -180) & (df_limpio[col_longitud] <= 180)
         ]
 
-        print(f"✓ Datos limpios: {len(df_limpio)} registros válidos")
+        print(f"Datos limpios: {len(df_limpio)} registros válidos")
 
         if len(df_limpio) == 0:
             raise ValueError("No hay datos válidos después de la limpieza")
@@ -195,19 +165,7 @@ class DatasetProcessor:
         lon_centro: float = -77.0428,
         radio: float = 0.5
     ) -> Tuple[np.ndarray, List[str]]:
-        """
-        Crea un dataset de muestra aleatorio.
-
-        Args:
-            n_puntos: Número de puntos a generar
-            lat_centro: Latitud del centro
-            lon_centro: Longitud del centro
-            radio: Radio en grados para dispersión
-
-        Returns:
-            Tupla (coordenadas, nombres)
-        """
-        print(f"🎲 Generando dataset de muestra: {n_puntos} puntos")
+        print(f"Generando dataset de muestra: {n_puntos} puntos")
 
         np.random.seed(42)
 
@@ -227,24 +185,15 @@ class DatasetProcessor:
         self.coordenadas = np.column_stack([latitudes, longitudes])
         self.nombres = [f"Punto_{i+1}" for i in range(n_puntos)]
 
-        print(f"✓ Dataset generado: {len(self.nombres)} puntos")
+        print(f"Dataset generado: {len(self.nombres)} puntos")
 
         return self.coordenadas, self.nombres
 
     def limitar_puntos(self, max_puntos: int) -> Tuple[np.ndarray, List[str]]:
-        """
-        Limita el dataset a un número máximo de puntos.
-
-        Args:
-            max_puntos: Número máximo de puntos
-
-        Returns:
-            Tupla (coordenadas, nombres) limitados
-        """
         if self.coordenadas is None or len(self.coordenadas) <= max_puntos:
             return self.coordenadas, self.nombres
 
-        print(f"✂️ Limitando dataset de {len(self.coordenadas)} a {max_puntos} puntos")
+        print(f"Limitando dataset de {len(self.coordenadas)} a {max_puntos} puntos")
 
         # Tomar los primeros max_puntos
         self.coordenadas = self.coordenadas[:max_puntos]
@@ -253,22 +202,13 @@ class DatasetProcessor:
         return self.coordenadas, self.nombres
 
     def calcular_matriz_distancias(self, usar_geodesica: bool = False) -> np.ndarray:
-        """
-        Calcula la matriz de distancias entre todos los puntos.
-
-        Args:
-            usar_geodesica: Si True, usa distancia geodésica; si False, euclidiana
-
-        Returns:
-            Matriz de distancias (N, N)
-        """
         if self.coordenadas is None:
             raise ValueError("No hay coordenadas cargadas")
 
         n = len(self.coordenadas)
         matriz = np.zeros((n, n))
 
-        print(f"📏 Calculando matriz de distancias ({n}x{n})...")
+        print(f"Calculando matriz de distancias ({n}x{n})...")
 
         for i in range(n):
             for j in range(i + 1, n):
@@ -287,17 +227,11 @@ class DatasetProcessor:
                 matriz[i, j] = dist
                 matriz[j, i] = dist
 
-        print(f"✓ Matriz calculada")
+        print(f"Matriz calculada")
 
         return matriz
 
     def obtener_estadisticas(self) -> dict:
-        """
-        Obtiene estadísticas del dataset.
-
-        Returns:
-            Diccionario con estadísticas
-        """
         if self.coordenadas is None:
             return {}
 
@@ -313,14 +247,8 @@ class DatasetProcessor:
         }
 
     def exportar_a_excel(self, archivo: str = 'dataset_procesado.xlsx'):
-        """
-        Exporta el dataset procesado a Excel.
-
-        Args:
-            archivo: Nombre del archivo de salida
-        """
         if self.coordenadas is None:
-            print("⚠️ No hay datos para exportar")
+            print("No hay datos para exportar")
             return
 
         df_export = pd.DataFrame({
@@ -330,5 +258,4 @@ class DatasetProcessor:
         })
 
         df_export.to_excel(archivo, index=False)
-        print(f"✓ Dataset exportado a: {archivo}")
-
+        print(f"Dataset exportado a: {archivo}")

@@ -1,8 +1,3 @@
-"""
-Analizador del CSV de Intervenciones
-Este script analiza el CSV y genera coordenadas para las ubicaciones
-"""
-
 import pandas as pd
 import numpy as np
 from geopy.geocoders import Nominatim
@@ -12,7 +7,6 @@ import pickle
 import os
 
 class CSVAnalyzer:
-    """Analiza el CSV de intervenciones y genera coordenadas"""
 
     def __init__(self, csv_path):
         self.csv_path = csv_path
@@ -21,66 +15,61 @@ class CSVAnalyzer:
         self.cache_file = 'coordenadas_cache.pkl'
 
     def cargar_csv(self):
-        """Carga el CSV con el encoding correcto"""
-        print("📂 Cargando CSV...")
+        print("Cargando CSV...")
         try:
             # Intentar diferentes encodings
             for encoding in ['latin1', 'iso-8859-1', 'cp1252', 'utf-8']:
                 try:
                     self.df = pd.read_csv(self.csv_path, sep=';', encoding=encoding)
-                    print(f"✓ CSV cargado con encoding {encoding}")
+                    print(f"CSV cargado con encoding {encoding}")
                     print(f"  Total de registros: {len(self.df)}")
                     print(f"  Columnas: {list(self.df.columns)}")
                     return True
                 except:
                     continue
-            print("❌ No se pudo cargar el CSV con ningún encoding")
+            print("No se pudo cargar el CSV con ningún encoding")
             return False
         except Exception as e:
-            print(f"❌ Error al cargar CSV: {e}")
+            print(f"Error al cargar CSV: {e}")
             return False
 
     def analizar_estructura(self):
-        """Analiza la estructura del CSV"""
         if self.df is None:
-            print("❌ Primero debes cargar el CSV")
+            print("Primero debes cargar el CSV")
             return
 
-        print("\n📊 ANÁLISIS DEL CSV")
+        print("\nANÁLISIS DEL CSV")
         print("=" * 60)
         print(f"Total de registros: {len(self.df)}")
         print(f"\nColumnas ({len(self.df.columns)}):")
         for i, col in enumerate(self.df.columns, 1):
             print(f"  {i}. {col}")
 
-        print("\n🗺️ INFORMACIÓN GEOGRÁFICA DISPONIBLE:")
+        print("\nINFORMACIÓN GEOGRÁFICA DISPONIBLE:")
         print(f"  - Departamentos únicos: {self.df['DEPARTAMENTO'].nunique()}")
         print(f"  - Provincias únicas: {self.df['PROVINCIA'].nunique()}")
 
-        print("\n📍 Primeros registros:")
+        print("\nPrimeros registros:")
         print(self.df[['CODIGO_RUTA', 'DEPARTAMENTO', 'PROVINCIA', 'INICIO', 'FINAL', 'LONGITUD']].head(10))
 
     def cargar_cache(self):
-        """Carga el cache de coordenadas"""
         if os.path.exists(self.cache_file):
             try:
                 with open(self.cache_file, 'rb') as f:
                     self.coordenadas_cache = pickle.load(f)
-                print(f"✓ Cache cargado: {len(self.coordenadas_cache)} ubicaciones")
+                print(f"Cache cargado: {len(self.coordenadas_cache)} ubicaciones")
             except:
-                print("⚠️ No se pudo cargar el cache")
+                print("No se pudo cargar el cache")
 
     def guardar_cache(self):
-        """Guarda el cache de coordenadas"""
         try:
             with open(self.cache_file, 'wb') as f:
                 pickle.dump(self.coordenadas_cache, f)
-            print(f"✓ Cache guardado: {len(self.coordenadas_cache)} ubicaciones")
+            print(f"Cache guardado: {len(self.coordenadas_cache)} ubicaciones")
         except Exception as e:
-            print(f"⚠️ Error al guardar cache: {e}")
+            print(f"Error al guardar cache: {e}")
 
     def obtener_coordenadas_provincia(self, departamento, provincia):
-        """Obtiene coordenadas aproximadas de una provincia usando geocoding"""
         key = f"{departamento}_{provincia}"
 
         # Verificar cache
@@ -98,19 +87,18 @@ class CSVAnalyzer:
                 time.sleep(1)  # Respetar límites de la API
                 return coords
             else:
-                print(f"⚠️ No se encontraron coordenadas para {provincia}, {departamento}")
+                print(f"No se encontraron coordenadas para {provincia}, {departamento}")
                 return None
         except Exception as e:
-            print(f"❌ Error en geocoding: {e}")
+            print(f"Error en geocoding: {e}")
             return None
 
     def generar_coordenadas_aproximadas(self):
-        """Genera coordenadas aproximadas para cada intervención"""
         if self.df is None:
-            print("❌ Primero debes cargar el CSV")
+            print("Primero debes cargar el CSV")
             return None
 
-        print("\n🌍 Generando coordenadas aproximadas...")
+        print("\nGenerando coordenadas aproximadas...")
         self.cargar_cache()
 
         # Coordenadas aproximadas de capitales de departamento (Perú)
@@ -166,16 +154,15 @@ class CSVAnalyzer:
 
         self.guardar_cache()
 
-        print(f"✓ Generadas {len(coordenadas)} coordenadas")
+        print(f"Generadas {len(coordenadas)} coordenadas")
         return np.array(coordenadas), nombres
 
     def generar_coordenadas_por_ruta(self, max_rutas=100):
-        """Genera coordenadas usando las rutas como referencia"""
         if self.df is None:
-            print("❌ Primero debes cargar el CSV")
+            print("Primero debes cargar el CSV")
             return None
 
-        print(f"\n🛣️ Generando coordenadas por ruta (max: {max_rutas})...")
+        print(f"\nGenerando coordenadas por ruta (max: {max_rutas})...")
 
         # Coordenadas base por departamento
         coords_departamentos = {
@@ -217,12 +204,11 @@ class CSVAnalyzer:
                 coordenadas.append([lat, lon])
                 nombres.append(f"{codigo_ruta}")
 
-        print(f"✓ Generadas {len(coordenadas)} coordenadas de rutas")
+        print(f"Generadas {len(coordenadas)} coordenadas de rutas")
         return np.array(coordenadas), nombres
 
     def exportar_a_excel(self, coordenadas, nombres, archivo='dataset_coordenadas.xlsx'):
-        """Exporta las coordenadas a un archivo Excel"""
-        print(f"\n💾 Exportando a {archivo}...")
+        print(f"\nExportando a {archivo}...")
 
         df_export = pd.DataFrame({
             'Nombre': nombres,
@@ -231,13 +217,12 @@ class CSVAnalyzer:
         })
 
         df_export.to_excel(archivo, index=False)
-        print(f"✓ Archivo exportado: {archivo}")
+        print(f"Archivo exportado: {archivo}")
 
 
 def main():
-    """Función principal"""
     print("=" * 70)
-    print("🔍 ANALIZADOR DE CSV - SISTEMA DE OPTIMIZACIÓN DE RUTAS")
+    print("ANALIZADOR DE CSV - SISTEMA DE OPTIMIZACIÓN DE RUTAS")
     print("=" * 70)
 
     # Ruta al CSV
@@ -268,7 +253,7 @@ def main():
         analyzer.exportar_a_excel(coords2, nombres2, 'dataset_rutas.xlsx')
 
     print("\n" + "=" * 70)
-    print("✅ ANÁLISIS COMPLETADO")
+    print("ANÁLISIS COMPLETADO")
     print("=" * 70)
     print("\nArchivos generados:")
     print("  1. dataset_provincias.xlsx - Coordenadas por provincia")
@@ -278,4 +263,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

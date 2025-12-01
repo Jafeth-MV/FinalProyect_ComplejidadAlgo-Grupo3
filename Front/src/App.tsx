@@ -152,11 +152,7 @@ function App() {
                 <p className="text-xs text-gray-500 mt-1">Soporta .xlsx, .csv</p>
 
                 {/* Format Guide */}
-                <div className="mt-4 flex flex-col items-center gap-2 bg-[#16181b] p-2 rounded border border-gray-800/50">
-                  <div className="flex items-center gap-2 text-yellow-500/80">
-                    <FileSpreadsheet className="w-4 h-4" />
-                    <span className="text-xs font-mono">ejemplo.xlsx</span>
-                  </div>
+                <div className="mt-2 text-center">
                   <p className="text-[10px] text-gray-400">
                     Formato requerido: <span className="text-gray-300 font-medium">Nombre, Latitud, Longitud</span>
                   </p>

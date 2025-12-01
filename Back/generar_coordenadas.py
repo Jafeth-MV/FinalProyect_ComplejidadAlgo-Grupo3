@@ -1,7 +1,3 @@
-"""
-Script simple para generar coordenadas desde el CSV de intervenciones
-"""
-
 import pandas as pd
 import numpy as np
 
@@ -34,16 +30,15 @@ COORDS_DEPARTAMENTOS = {
 }
 
 def generar_desde_csv(archivo_csv, archivo_salida, num_puntos=50):
-    """Genera coordenadas desde el CSV"""
 
-    print(f"📂 Cargando {archivo_csv}...")
+    print(f"Cargando {archivo_csv}...")
 
     # Cargar CSV
     df = pd.read_csv(archivo_csv, sep=';', encoding='latin1')
-    print(f"✓ {len(df)} registros cargados")
+    print(f"{len(df)} registros cargados")
 
     # Obtener rutas únicas limitadas
-    print(f"\n🛣️ Procesando rutas (limitado a {num_puntos})...")
+    print(f"\nProcesando rutas (limitado a {num_puntos})...")
     rutas_unicas = df.drop_duplicates(subset=['CODIGO_RUTA']).head(num_puntos)
 
     coordenadas = []
@@ -74,10 +69,10 @@ def generar_desde_csv(archivo_csv, archivo_salida, num_puntos=50):
                 nombres.append(f"{codigo_ruta}_{provincia[:20]}")
 
         except Exception as e:
-            print(f"⚠️ Error en fila {idx}: {e}")
+            print(f"Error en fila {idx}: {e}")
             continue
 
-    print(f"✓ Generadas {len(coordenadas)} coordenadas")
+    print(f"Generadas {len(coordenadas)} coordenadas")
 
     # Crear DataFrame
     df_coordenadas = pd.DataFrame({
@@ -87,16 +82,16 @@ def generar_desde_csv(archivo_csv, archivo_salida, num_puntos=50):
     })
 
     # Guardar
-    print(f"\n💾 Guardando en {archivo_salida}...")
+    print(f"\nGuardando en {archivo_salida}...")
     df_coordenadas.to_excel(archivo_salida, index=False)
-    print(f"✓ Archivo guardado")
+    print(f"Archivo guardado")
 
     # Mostrar resumen
-    print(f"\n📊 RESUMEN:")
+    print(f"\nRESUMEN:")
     print(f"  Total de puntos: {len(df_coordenadas)}")
     print(f"  Rango latitud: [{df_coordenadas['Latitud'].min():.4f}, {df_coordenadas['Latitud'].max():.4f}]")
     print(f"  Rango longitud: [{df_coordenadas['Longitud'].min():.4f}, {df_coordenadas['Longitud'].max():.4f}]")
-    print(f"\n✅ Primeros 5 registros:")
+    print(f"\nPrimeros 5 registros:")
     print(df_coordenadas.head())
 
     return df_coordenadas
@@ -104,7 +99,7 @@ def generar_desde_csv(archivo_csv, archivo_salida, num_puntos=50):
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("🚀 GENERADOR DE COORDENADAS")
+    print("GENERADOR DE COORDENADAS")
     print("=" * 70)
 
     # Generar coordenadas
@@ -115,8 +110,7 @@ if __name__ == '__main__':
     )
 
     print("\n" + "=" * 70)
-    print("✅ PROCESO COMPLETADO")
+    print("PROCESO COMPLETADO")
     print("=" * 70)
     print("\nAhora puedes ejecutar el sistema de optimización con:")
     print("  python main.py")
-
